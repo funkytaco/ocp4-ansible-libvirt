@@ -1,5 +1,7 @@
+openshift_bin_path: ~/Documents/KVM/howto-kvm/installer/bin
 
 base_image_name: rhcos-43.81.202001031653.0-qemu.x86_64.qcow2
+base_image_name_compressed: rhcos-43.81.202001031653.0-qemu.x86_64.qcow2.gz
 base_image_url: https://releases-rhcos-art.cloud.privileged.psi.redhat.com/storage/releases/rhcos-4.3/43.81.202001031653.0/x86_64/rhcos-43.81.202001031653.0-qemu.x86_64.qcow2.gz
 
 #base_image_url: https://releases-rhcos-art.cloud.privileged.psi.redhat.com/storage/releases/rhcos-4.4/44.81.202002140030-0/x86_64/rhcos-44.81.202002140030-0-qemu.x86_64.qcow2.gz
@@ -7,19 +9,20 @@ base_image_url: https://releases-rhcos-art.cloud.privileged.psi.redhat.com/stora
 
 fcos_image_url: https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/31.20200118.3.0/x86_64/fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2.xz
 fcos_image_name: fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2
+fcos_image_name_compressed: fedora-coreos-31.20200118.3.0-qemu.x86_64.qcow2.xz
 #base_image_name: rhcos-410.8.20190604.0-qemu.qcow2
 #base_image_url: https://releases-rhcos-art.cloud.privileged.psi.redhat.com/storage/releases/ootpa/410.8.20190604.0/rhcos-410.8.20190604.0-qemu.qcow2
 
 
 
 workdir:
-  vm_data: /home/rspazzol/git/ocp4-ansible-libvirt/vms
-  install: /home/rspazzol/git/ocp4-ansible-libvirt/install
-  registry_mirror: /home/rspazzol/git/ocp4-ansible-libvirt/registry-mirror
+  vm_data: /home/lgonzal/git/ocp4-ansible-libvirt/vms
+  install: /home/lgonzal/git/ocp4-ansible-libvirt/install
+  registry_mirror: /home/lgonzal/git/ocp4-ansible-libvirt/registry-mirror
 
 mirror:
-  username: raffa
-  password: raffa
+  username: lgonzal
+  password: lgonzal
   pull_secret_file: pull_secret.json
   sigstore: https://mirror.openshift.com/pub/openshift-v4/signatures/
   tang_secret: PLjNyRdGw03zlRoGjQYMahSZGu9
