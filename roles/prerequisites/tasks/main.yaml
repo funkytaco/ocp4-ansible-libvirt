@@ -1,3 +1,27 @@
+- name: Environment Check - Public SSH Key File in ENV
+  shell: "echo Found the SSH KEY" #{{ ansible_env.PUBLIC_SSH_KEY_FILE}}
+  when: "'PUBLIC_SSH_KEY_FILE' in ansible_env"
+  failed_when: "'PUBLIC_SSH_KEY_FILE' not in ansible_env"
+  register: check_key
+  tags:
+    - prereqs
+    - env
+- name: Environment Check - Pull Secret File in ENV
+  shell: "echo Found the Pull Secret File in ENV" #{{ ansible_env.PULL_SECRET_FILE}}
+  when: "'PULL_SECRET_FILE' in ansible_env"
+  register: check_secret
+  tags:
+    - prereqs
+    - env
+- name: Environment Check - Become Password in ENV
+  shell: "echo Found the Become Password in ENV" #{{ ansible_env.BECOME_PASSWORD}}
+  when: "'BECOME_PASSWORD' in ansible_env"
+  register: check_password
+  tags:
+    - prereqs
+    - env
+  
+ 
 - name: create install dir
   file:
     path: "{{ workdir.install }}"
@@ -10,32 +34,50 @@
     state: directory
     setype: virt_content_t    
 
-- name: check if rhcos image exists
+- name: check if decompressed rhcos image exists
   stat:
-    path: "{{ workdir.vm_data }}/{{ base_image_name }}"
-  register: result 
+      path: "{{ workdir.vm_data }}/{{ base_image_name }}"
+  register: rhcos_qcow2_decompressed
 
-- name: check if fhcos image exists
+- name: download rhcos image on Red Hat VPN
+  get_url: 
+    url: "{{ base_image_url }}"
+    dest: "{{ workdir.vm_data }}/{{ base_image_name }}.gz"
+  when: rhcos_qcow2_decompressed.stat.exists == False
+  register: download_rhcos
+  tags:
+          - download
+          - images
+    
+- name: check if decompressed fcos image exists
   stat:
-    path: "{{ workdir.vm_data }}/{{ fcos_image_name }}"
-  register: result_fcos  
+      path: "{{ workdir.vm_data }}/{{ fcos_image_name }}"
+  register: fcos_qcow2_decompressed 
 
-- name: download rhcos image
-  shell: curl -Lo {{ workdir.vm_data }}/{{ base_image_name }}.gz {{ base_image_url }}
-  when: result.stat.exists == false  
+- name: download fcos image on Red Hat VPN
+  get_url: 
+    url: "{{ fcos_image_url }}"
+    dest: "{{ workdir.vm_data }}/{{ fcos_image_name }}.xz"
+  when: fcos_qcow2_decompressed.stat.exists == False
+  register: download_fcos
+  tags:
+          - download
+          - images
 
-- name: download fcos image
-  shell: curl -Lo {{ workdir.vm_data }}/{{ fcos_image_name }}.xz {{ fcos_image_url }}
-  when: result_fcos.stat.exists == false 
+- name: decompress rhcos image
+  shell: "gunzip -f {{ download_rhcos.dest }}"
+  when: download_rhcos.dest is defined 
+  tags:
+          - decompress
+          - images
+- name: decompress fcos image
+  #/home/lgonzal/git/ocp4-ansible-libvirt/vms/rhcos-43.81.202001031653.0-qemu.x86_64.qcow2.xz
+  shell: "unxz -d {{ download_fcos.dest }}"
+  when: download_fcos.dest is defined
+  tags:
+          - decompress
+          - images
 
-- name: uncompress rhcos image
-  shell: gunzip {{ workdir.vm_data }}/{{ base_image_name }}.gz
-  when: result.stat.exists == false  
-
-- name: uncompress fcos image
-  shell: unxz {{ workdir.vm_data }}/{{ fcos_image_name }}.xz
-  when: result_fcos.stat.exists == false  
-  
 - name: fix selinux rhcos
   file:
     path: "{{ workdir.vm_data }}/{{ base_image_name }}"

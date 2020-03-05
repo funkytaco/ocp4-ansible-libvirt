@@ -8,6 +8,7 @@
   with_items: '{{ cluster.compute.masters }}'    
 
 - name: create bootstrap
+  become: true
   virt:
     command: define
     xml: '{{ lookup("template", "vm-template.xml.j2") }}'
@@ -31,7 +32,7 @@
     name: '{{ item.name }}.{{ cluster.compute.vms_domain }}'
   with_items:
   - '{{ cluster.compute.bootstrap }}'
-  become: true
+  become: yes 
 
 - name: start masters
   virt:
@@ -42,7 +43,7 @@
   
 - name: Waiting since {{ ansible_date_time.time }} for the bootstrap to complete. On a laptop it can take much longer, we are going to try for 4 times.
   command: |
-    openshift-install wait-for bootstrap-complete --dir "{{ workdir.install }}" 
+    {{ openshift_bin_path }}/openshift-install wait-for bootstrap-complete --dir "{{ workdir.install }}" 
   register: task_result
   until: task_result.rc == 0
   retries: 4

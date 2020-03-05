@@ -116,7 +116,7 @@
 
 - name: Waiting since {{ ansible_date_time.time }} for the install to complete. On a laptop it can take much longer, we are going to try for 4 times.
   command: |
-    openshift-install wait-for install-complete --dir "{{ workdir.install }}" 
+    {{ openshift_bin_path }}/openshift-install wait-for install-complete --dir "{{ workdir.install }}" 
   register: task_result
   until: task_result.rc == 0
   retries: 4
