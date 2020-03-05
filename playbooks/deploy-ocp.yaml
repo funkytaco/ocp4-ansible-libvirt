@@ -11,10 +11,10 @@
   roles:
   - role: create-network  
 
-- hosts: tang-server
-  tasks:
-    - include_role:
-        name: create-tang-key
+    #- hosts: tang-server
+    #tasks:
+    #- include_role:
+    #    name: create-tang-key
 
 - hosts: localhost
   roles:
