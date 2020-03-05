@@ -1,3 +1,4 @@
+.env
 vms/
 install/
 registry-mirror/
