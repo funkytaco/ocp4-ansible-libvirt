@@ -1,7 +1,7 @@
 ---
 - hosts: localhost
   roles:
-  - role: prerequisites
+  - role: offline-prerequisites
 
 - hosts: localhost
   roles:
@@ -27,6 +27,7 @@
 - hosts: localhost
   roles:
   - role: create-vms
+  tags: create-vms
 
 - hosts: localhost
   roles:

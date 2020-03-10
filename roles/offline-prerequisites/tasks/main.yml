@@ -1,0 +1,95 @@
+- name: create install dir
+  file:
+    path: "{{ workdir.install }}"
+    state: directory
+    setype: virt_content_t
+
+- name: create vm data dir
+  file:
+    path: "{{ workdir.vm_data }}"
+    state: directory
+    setype: virt_content_t    
+
+- name: check if rhcos image exists
+  stat:
+    path: "{{ workdir.vm_data }}/{{ base_image_name }}.gz"
+  register: result 
+  tags:
+    - download_images
+
+- name: check if fcos image exists
+  stat:
+    path: "{{ workdir.vm_data }}/{{ fcos_image_name }}.xz"
+  register: result_fcos  
+  tags:
+    - download_images
+
+- name: copy rhcos image
+  copy:
+    src: "~/usb/{{ base_image_name }}.gz"
+    dest: "{{ workdir.vm_data }}/"
+  when: result.stat.exists == false
+  delegate_to: localhost
+  tags:
+    - download_images 
+
+- name: copy fcos image
+  copy:
+    src: "~/usb/{{ fcos_image_name }}.xz"
+    dest: "{{ workdir.vm_data }}/"
+  when: result_fcos.stat.exists == false
+  delegate_to: localhost
+  tags:
+    - download_images
+
+- name: uncompress rhcos image
+  shell: gunzip {{ workdir.vm_data }}/{{ base_image_name }}.gz
+  when: result.stat.exists == false
+
+- name: uncompress fcos image
+  shell: unxz {{ workdir.vm_data }}/{{ fcos_image_name }}.xz
+  when: result_fcos.stat.exists == false  
+  
+- name: fix selinux rhcos
+  file:
+    path: "{{ workdir.vm_data }}/{{ base_image_name }}"
+    state: file
+    setype: virt_content_t
+
+- name: fix selinux fcos
+  file:
+    path: "{{ workdir.vm_data }}/{{ fcos_image_name }}"
+    state: file
+    setype: virt_content_t    
+
+- name: download installer exec
+  meta: noop
+
+- name: check if installer exists
+  stat:
+    path: "{{ workdir.vm_data }}/openshift-install-linux-{{ cluster.version }}/openshift-install"
+  register: result_installer   
+
+- name: copy installer exec
+  copy:
+    src: "~/usb/openshift-install-linux-{{ cluster.version }}.tar.gz"
+    dest: "{{ workdir.vm_data }}/"
+
+- name: create dir for installer
+  file:
+    path: "{{ workdir.vm_data }}/openshift-install-linux-{{ cluster.version }}"
+    state: directory
+
+- name: uncompress installer exec image
+  unarchive:
+    src: "{{ workdir.vm_data }}/openshift-install-linux-{{ cluster.version }}.tar.gz"
+    dest: "{{ workdir.vm_data }}/openshift-install-linux-{{ cluster.version }}"
+  when: result_installer.stat.exists == false  
+  
+- name: set openshift-install executable
+  set_fact:
+    openshift_install_executable: "{{ workdir.vm_data }}/openshift-install-linux-{{ cluster.version }}/openshift-install"
+
+- name: set oc executable
+  set_fact:
+    oc_executable: oc --kubeconfig={{ workdir.install }}/auth/kubeconfig  
